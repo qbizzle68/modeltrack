@@ -4,6 +4,8 @@ from pickle import dump, load
 
 from .detail import Color, Paint, Decal
 
+__all__ = ('HashMap', 'PaintMap', 'Part', 'Assembly', 'Step', 'Model')
+
 
 class HashMap(dict):
     """A custom map type that is hashable. The hash is based upon sorting the keys by their own hash values with the
