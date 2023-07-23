@@ -148,7 +148,7 @@ class Part:
 
         return self.isPainted() and self.isDecaled()
 
-    def copy(self, number: int = 1) -> 'Part' | tuple['Part']:
+    def copy(self, number: int = 1) -> 'Part | tuple[Part]':
         """Returns a single or a number of copies of a Part.
 
         Raises TypeError if number is not an int and a ValueError if number <= 0."""
