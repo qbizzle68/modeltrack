@@ -5,6 +5,6 @@ setup(
     version='0.0.1.0',
     author='Quinton Barnes',
     description='A package for tracking diecast model progress.',
-    packages=['model-track'],
+    packages=['modeltrack'],
     package_dir={'': 'src'}
 )
