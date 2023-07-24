@@ -4,7 +4,7 @@ from pickle import dump, load
 
 from .detail import Color, Paint, Decal
 
-__all__ = ('HashMap', 'PaintMap', 'Part', 'Assembly', 'Step', 'Model')
+__all__ = ('HashMap', 'PaintMap', 'Part', 'Assembly', 'Step', 'Model', 'loadModel')
 
 
 class HashMap(dict):
