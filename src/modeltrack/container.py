@@ -266,38 +266,30 @@ class Assembly(Part):
         part can be either a Part or Assembly type, or a str type whose value is matched against the part's id property.
         """
 
-        if isinstance(part, str):
-            rtn = [p for p in self._parts if p.id == part]
-
-            for a in self._assemblies:
-                if a._master is self._master:
-                    rtn += a.get(part, recursive=recursive)
-                elif recursive is True:
-                    rtn += a.get(part, recursive=True)
-
-            # if recursive is True:
-            #     for a in self._assemblies:
-            #         if a.master is self.master:
-            #             rtn += a.get(part, True)
-
-            return rtn
-        elif isinstance(part, Part):
-            rtn = [p for p in self._parts if p == part]
-
-            for a in self._assemblies:
-                if a._master is self._master:
-                    rtn += a.get(part, recursive=recursive)
-                elif recursive is True:
-                    rtn += a.get(part, recursive=True)
-
-            # if recursive is True:
-            #     for a in self._assemblies:
-            #         if a.master is self.master:
-            #             rtn += a.get(part, True)
-
-            return rtn
-        else:
+        if not isinstance(part, str) and not isinstance(part, Part):
             raise TypeError(f'part must be a str, Part, or Assembly type, not {type(part)}')
+
+        if recursive is not True and recursive is not False:
+            raise TypeError(f'recursive must be True or False, not {recursive}')
+
+        return self._get(part, recursive, self._master)
+
+    def _get(self, part: str, recursive: bool, master: 'Step') -> 'list[Part | Assembly]':
+        if isinstance(part, str):
+            if recursive is True:
+                rtn = [p for p in self._parts if p._id == part]
+            else:
+                rtn = [p for p in self._parts if p._id == part and p._master == master]
+        else:
+            if recursive is True:
+                rtn = [p for p in self._parts if p == part]
+            else:
+                rtn = [p for p in self._parts if p == part and p._master == master]
+
+        for a in self._assemblies:
+            rtn += a._get(part, recursive, master)
+
+        return rtn
 
     def attach(self, parts: 'list[Part | Assembly] | Part | Assembly'):
         """Add a list of Parts or Assemblies to an existing Assembly. The existing master property will be set to None.
@@ -341,12 +333,6 @@ class Assembly(Part):
                 p.master = value
                 if changed is False:
                     changed = True
-            # else:
-            #     try:
-            #         p.master = value
-            #         changed = True
-            #     except:
-            #         pass
 
         if changed is False:
             raise ValueError(f'master values already set')
@@ -413,10 +399,8 @@ class Step(Assembly):
         self._previous = previous
 
         if type(parts) == Part:
-            # parts.master = self
             partsArg = (parts,)
         elif type(parts) == Assembly:
-            # parts.master = self
             partsArg = (copy(parts),)
         else:
             tmp = []
@@ -427,7 +411,6 @@ class Step(Assembly):
                     tmp.append(copy(p))
                 else:
                     raise TypeError(f'all elements of parts must be an Assembly or Part type, not {type(p)}')
-                # p.master = self
             partsArg = tuple(tmp)
 
         super().__init__(name, partsArg)
@@ -438,6 +421,15 @@ class Step(Assembly):
     @property
     def previous(self):
         return self._previous
+
+    def get(self, part: 'str | Part | Assembly', recursive=False):
+        if not isinstance(part, str) and not isinstance(part, Part):
+            raise TypeError(f'part must be a str, Part, or Assembly type, not {type(part)}')
+
+        if recursive is not True and recursive is not False:
+            raise TypeError(f'recursive must be True or False, not {recursive}')
+
+        return self._get(part, recursive, self)
 
     def __hash__(self):
         return hash((self.__class__.__name__, super().__hash__()))
@@ -494,6 +486,7 @@ class Model:
         """Return the step by either a number or name. If number is an int, returns the step where number is the
         absolute step number, not an index. If number is a string, return the first step whose name matches the string,
         raising a ValueError if none are found."""
+
         if isinstance(number, int):
             return self._steps[number - 1]
         elif isinstance(number, str):
