@@ -197,7 +197,7 @@ class Assembly(Part):
     def __init__(self, id: str, parts: 'list[Part | Assembly] | Part | Assembly'):
         # We assume all Parts/Assemblies are already 'attached' to their Step when we're creating new Parts/Assemblies,
         # so all new Parts/Assemblies will have a master of None, so master equality still works.
-        self._master = None
+        # self._master = None
 
         if type(parts) == Part or type(parts) == Assembly:
             parts = (parts,)
@@ -413,10 +413,10 @@ class Step(Assembly):
         self._previous = previous
 
         if type(parts) == Part:
-            parts.master = self
+            # parts.master = self
             partsArg = (parts,)
         elif type(parts) == Assembly:
-            parts.master = self
+            # parts.master = self
             partsArg = (copy(parts),)
         else:
             tmp = []
@@ -427,10 +427,13 @@ class Step(Assembly):
                     tmp.append(copy(p))
                 else:
                     raise TypeError(f'all elements of parts must be an Assembly or Part type, not {type(p)}')
-                p.master = self
+                # p.master = self
             partsArg = tuple(tmp)
 
         super().__init__(name, partsArg)
+
+        for p in self._parts:
+            p.master = self
 
     @property
     def previous(self):
